@@ -1,0 +1,357 @@
+<title>CareTalk Pulse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: icon rail + soft-aqua canvas of panels; module switch and episode rail drive every panel below. */
+:root{
+  --bg:#E6F0F1; --panel:#FFFFFF; --panel-2:#F3F8F8; --line:#D5E3E5;
+  --ink:#0E1A1C; --muted:#5A6E71; --faint:#8DA2A5;
+  --lime:#C9EA4E; --lime-ink:#1D2A05; --aqua:#9ACFDD; --aqua-deep:#2F7F96;
+  --pill:#0E1A1C; --pill-ink:#FFFFFF;
+  --yt:#E5484D; --fb:#3D7BF4; --tt:#13A89E;
+  --good:#2E9E5B; --warn:#D98B12; --bad:#D6453D;
+  --shadow:0 1px 2px rgba(14,26,28,.05),0 8px 24px -12px rgba(14,26,28,.12);
+  --f:"Montserrat",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --r-xl:28px; --r-l:20px; --r-m:14px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0B1315; --panel:#132024; --panel-2:#18282C; --line:#24373B;
+  --ink:#E7F1F2; --muted:#9BB0B3; --faint:#6C8386;
+  --lime:#C9EA4E; --lime-ink:#1D2A05; --aqua:#2D6475; --aqua-deep:#8FD0E2;
+  --pill:#E7F1F2; --pill-ink:#0B1315;
+  --yt:#F2666A; --fb:#6A9BFF; --tt:#2CC7BC;
+  --good:#4CC27C; --warn:#F0A93A; --bad:#F06A62;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px -14px rgba(0,0,0,.6);
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0B1315; --panel:#132024; --panel-2:#18282C; --line:#24373B;
+  --ink:#E7F1F2; --muted:#9BB0B3; --faint:#6C8386;
+  --lime:#C9EA4E; --lime-ink:#1D2A05; --aqua:#2D6475; --aqua-deep:#8FD0E2;
+  --pill:#E7F1F2; --pill-ink:#0B1315;
+  --yt:#F2666A; --fb:#6A9BFF; --tt:#2CC7BC;
+  --good:#4CC27C; --warn:#F0A93A; --bad:#F06A62;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px -14px rgba(0,0,0,.6);
+  color-scheme:dark}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:var(--f);font-size:14px;font-weight:500;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+.num{font-variant-numeric:tabular-nums}
+.app{display:grid;grid-template-columns:76px minmax(0,1fr);min-height:100%}
+.rail{position:sticky;top:env(safe-area-inset-top,0px);height:100vh;display:flex;flex-direction:column;align-items:center;gap:10px;padding:22px 0;padding-left:env(safe-area-inset-left,0px)}
+.logo{width:40px;height:40px;border-radius:12px;background:var(--pill);color:var(--lime);display:grid;place-items:center;font-weight:800;font-size:13px;margin-bottom:18px}
+.rail a{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--muted);text-decoration:none;transition:background .2s,color .2s}
+.rail a:hover{background:var(--panel)}
+.rail a.on{background:var(--lime);color:var(--lime-ink);box-shadow:0 6px 16px -6px rgba(140,180,20,.7)}
+.rail svg{width:20px;height:20px}
+.main{min-width:0;padding-block:22px 48px;padding-right:max(16px,env(safe-area-inset-right,0px));padding-left:8px;display:flex;flex-direction:column;gap:18px}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:14px 20px;justify-content:space-between}
+.hello h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.02em;text-wrap:balance}
+.hello p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.search{display:flex;align-items:center;gap:8px;background:var(--panel);border-radius:999px;padding:10px 16px;min-width:0;width:240px;max-width:100%;box-shadow:var(--shadow)}
+.search input{border:0;outline:0;background:transparent;width:100%;font-size:13px}
+.search svg{width:16px;height:16px;color:var(--faint);flex:none}
+.seg{display:inline-flex;background:var(--panel);border-radius:999px;padding:5px;box-shadow:var(--shadow);position:relative}
+.seg button{border:0;background:transparent;padding:9px 18px;border-radius:999px;font-weight:700;font-size:13px;cursor:pointer;position:relative;z-index:1;transition:color .25s}
+.seg .glider{position:absolute;top:5px;bottom:5px;border-radius:999px;background:var(--pill);transition:left .35s cubic-bezier(.3,1.4,.5,1),width .35s cubic-bezier(.3,1.4,.5,1)}
+.seg button.on{color:var(--pill-ink)}
+.btn{border:0;cursor:pointer;border-radius:999px;padding:10px 18px;font-weight:700;font-size:13px;display:inline-flex;align-items:center;gap:8px;text-decoration:none;transition:transform .12s,box-shadow .2s,background .2s}
+.btn-dark{background:var(--pill);color:var(--pill-ink)}
+.btn-ghost{background:var(--panel-2);color:var(--ink)}
+.btn svg{width:16px;height:16px}
+.btn.spin svg{animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.press{transition:transform .12s cubic-bezier(.3,1.6,.5,1)}
+.press:active,.press.tap{transform:scale(.94)}
+:focus-visible{outline:2px solid var(--aqua-deep);outline-offset:2px}
+
+.syncbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--panel);border-radius:var(--r-l);padding:10px 12px 10px 16px;box-shadow:var(--shadow);font-size:12.5px;font-weight:600;color:var(--muted)}
+.syncbar .dot{width:9px;height:9px;border-radius:50%;background:var(--warn);flex:none}
+.syncbar.live .dot{background:var(--good);box-shadow:0 0 0 4px color-mix(in srgb,var(--good) 22%,transparent)}
+.syncbar.err .dot{background:var(--bad)}
+.syncbar b{color:var(--ink)}
+.syncbar .grow{flex:1;min-width:200px}
+
+.eprail{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 10px;scrollbar-width:thin;scroll-snap-type:x proximity}
+.ep{flex:none;scroll-snap-align:start;border:0;cursor:pointer;background:var(--panel);border-radius:16px;padding:10px 12px 9px;min-width:62px;text-align:left;box-shadow:var(--shadow);position:relative;transition:background .25s,color .25s}
+.ep small{display:block;font-size:10px;font-weight:600;color:var(--faint);letter-spacing:.06em;text-transform:uppercase}
+.ep b{font-size:18px;font-weight:800;letter-spacing:-.02em}
+.ep i{position:absolute;top:9px;right:9px;width:7px;height:7px;border-radius:50%;background:var(--line)}
+.ep i.has{background:var(--good)}
+.ep.on{background:var(--pill);color:var(--pill-ink)}
+.ep.on small{color:var(--lime)}
+
+.grid{display:grid;gap:18px;grid-template-columns:repeat(12,minmax(0,1fr))}
+.card{background:var(--panel);border-radius:var(--r-xl);padding:22px;box-shadow:var(--shadow);min-width:0}
+.card h2{margin:0;font-size:16px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:10px}
+.card h2 .ico{width:32px;height:32px;border-radius:10px;background:var(--panel-2);display:grid;place-items:center;flex:none}
+.card h2 .ico svg{width:16px;height:16px}
+.sub{color:var(--muted);font-size:12px;margin:4px 0 0}
+.chead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.anim{animation:rise .55s cubic-bezier(.2,.9,.3,1) both}
+@keyframes rise{from{transform:translateY(10px);opacity:.35}to{transform:none;opacity:1}}
+
+.hero{grid-column:span 8;background:linear-gradient(135deg,var(--panel) 0%,var(--panel-2) 100%);position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:center}
+.hero .eyebrow{display:inline-flex;gap:8px;align-items:center;background:var(--lime);color:var(--lime-ink);padding:5px 12px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.hero h3{font-size:30px;line-height:1.1;font-weight:800;letter-spacing:-.03em;margin:14px 0 6px;text-wrap:balance}
+.hero .dept{color:var(--muted);font-weight:600}
+.hero .big{display:flex;gap:28px;flex-wrap:wrap;margin-top:18px}
+.hero .big div span{display:block;font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+.hero .big div b{font-size:28px;font-weight:800;letter-spacing:-.03em}
+.hero .contrib{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+.gaugebox{text-align:center;position:relative}
+.gauge{width:190px;max-width:100%}
+.gaugebox p{margin:4px auto 0;font-size:11px;color:var(--muted);font-weight:600;max-width:190px}
+.blob{position:absolute;right:-60px;top:-80px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,var(--aqua) 0%,transparent 70%);opacity:.55;pointer-events:none;animation:drift 9s ease-in-out infinite alternate}
+@keyframes drift{to{transform:translate(-30px,30px) scale(1.1)}}
+
+.seedsum{grid-column:span 4;background:var(--aqua);color:var(--ink);display:flex;flex-direction:column;gap:14px}
+.seedsum .sub{color:var(--ink);opacity:.75}
+.cups{display:grid;grid-template-columns:repeat(10,1fr);gap:6px}
+.cup{aspect-ratio:1/1.15;max-width:100%;border-radius:4px 4px 9px 9px;background:rgba(255,255,255,.55);transition:background .4s}
+.cup.f{background:var(--pill)}
+.seedsum .bignum{font-size:44px;font-weight:800;letter-spacing:-.04em;line-height:1}
+.seedsum .bignum small{font-size:16px;font-weight:600;opacity:.7}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+.chip.lime{background:var(--lime);color:var(--lime-ink)}
+.chip.dark{background:var(--pill);color:var(--pill-ink)}
+.chip.soft{background:var(--panel-2);color:var(--ink)}
+.chip.good{background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--good)}
+.chip.warn{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+.chip.bad{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad)}
+button.chip{border:0;cursor:pointer}
+
+.tiles{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px}
+.tile{background:var(--panel);border-radius:var(--r-l);padding:16px 16px 14px;box-shadow:var(--shadow);min-width:0;cursor:pointer;border:0;text-align:left;transition:transform .15s,box-shadow .2s,outline-color .2s;outline:2px solid transparent}
+.tile:hover{transform:translateY(-2px)}
+.tile span{display:flex;justify-content:space-between;align-items:center;gap:6px;color:var(--muted);font-size:12px;font-weight:600}
+.tile b{display:block;font-size:28px;font-weight:800;letter-spacing:-.03em;margin-top:8px}
+.tile em{font-style:normal;font-size:11px;color:var(--faint);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile svg.spark{width:100%;height:28px;margin-top:6px;display:block}
+.tile.sel{outline-color:var(--pill)}
+
+.trend{grid-column:span 8}
+.platforms{grid-column:span 4;display:flex;flex-direction:column;gap:12px}
+.pf{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px;border-radius:var(--r-m);background:var(--panel-2);cursor:pointer;border:0;text-align:left;width:100%;transition:background .2s}
+.pf.on{background:var(--pill);color:var(--pill-ink)}
+.pf .dot{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;color:#fff}
+.pf .dot svg{width:18px;height:18px}
+.pf .bar{display:block;height:6px;border-radius:6px;background:var(--line);margin-top:6px;overflow:hidden}
+.pf .bar i{display:block;height:100%;border-radius:6px;transition:width .8s cubic-bezier(.2,.9,.3,1)}
+.pf strong{font-size:18px;font-weight:800}
+.pf small{color:inherit;opacity:.7;font-size:11px;font-weight:600}
+svg.chart{width:100%;height:auto;display:block;overflow:visible}
+svg.chart .ax{fill:var(--faint);font-size:10px;font-family:var(--f);font-weight:600}
+svg.chart .gl{stroke:var(--line);stroke-dasharray:3 4}
+svg.chart rect.b{cursor:pointer;transition:opacity .25s}
+svg.chart rect.b:hover{opacity:.8}
+svg.chart.grow rect.b{transform-box:fill-box;transform-origin:bottom;animation:barup .6s cubic-bezier(.2,.9,.3,1) both}
+@keyframes barup{from{transform:scaleY(.05)}}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);font-weight:600;margin-top:10px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+.seeding{grid-column:span 7}
+.stack{grid-column:span 5;display:flex;flex-direction:column;gap:18px;min-width:0}
+.srow{display:grid;grid-template-columns:minmax(0,1fr) 150px 64px;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.srow:first-child{border-top:0}
+.srow .t{min-width:0}
+.srow .t b{display:block;font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srow .t small{color:var(--muted);font-size:11px;font-weight:600}
+.srow .v{text-align:right;font-weight:800;font-size:15px}
+.srow .v small{font-weight:600;color:var(--muted);font-size:11px}
+.prog{height:8px;border-radius:8px;background:var(--panel-2);overflow:hidden}
+.prog i{display:block;height:100%;border-radius:8px;transition:width .7s cubic-bezier(.2,.9,.3,1)}
+.pl{font-size:11px;font-weight:700;margin-top:4px;display:flex;justify-content:space-between;color:var(--muted)}
+.slist{max-height:440px;overflow:auto;padding-right:4px}
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.howto{margin-top:12px;padding:12px 14px;border-radius:var(--r-m);background:var(--panel-2);font-size:12px;color:var(--muted);font-weight:600}
+.howto b{color:var(--ink)}
+.out{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px}
+.out div{background:var(--panel-2);border-radius:var(--r-m);padding:12px 10px;min-width:0}
+.out span{display:block;font-size:11px;color:var(--muted);font-weight:700}
+.out b{font-size:24px;font-weight:800;letter-spacing:-.02em}
+.out small{display:block;font-size:10.5px;color:var(--faint);font-weight:600}
+.lrow{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.lrow:first-child{border-top:0}
+.lrow .rk{font-weight:800;color:var(--faint);font-size:12px}
+.lrow b{display:block;font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lrow small{color:var(--muted);font-size:11px;font-weight:600}
+.lrow strong{font-weight:800}
+.tier{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:999px;display:inline-block}
+.tier.main{background:var(--lime);color:var(--lime-ink)}
+.tier.support{background:var(--panel-2);color:var(--muted)}
+
+.posts{grid-column:span 12}
+.twrap{overflow-x:auto;margin-top:14px;border-radius:var(--r-m)}
+table{width:100%;border-collapse:collapse;min-width:1000px;font-size:12.5px}
+th{text-align:left;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;padding:10px;background:var(--panel-2);white-space:nowrap}
+th.r,td.r{text-align:right}
+th:first-child{border-radius:12px 0 0 12px}th:last-child{border-radius:0 12px 12px 0}
+td{padding:10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td.ttl{max-width:260px;overflow:hidden;text-overflow:ellipsis}
+.pfbadge{display:inline-flex;align-items:center;gap:6px;font-weight:700}
+.pfbadge i{width:8px;height:8px;border-radius:50%}
+.src{font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;background:var(--panel-2);color:var(--muted)}
+.src.auto{background:color-mix(in srgb,var(--yt) 14%,transparent);color:var(--yt)}
+a.lk{color:var(--aqua-deep);font-weight:700;text-decoration:none}
+a.lk:hover{text-decoration:underline}
+.empty{padding:28px;text-align:center;color:var(--muted);border:1.5px dashed var(--line);border-radius:var(--r-l)}
+.empty b{display:block;color:var(--ink);font-size:15px;margin-bottom:4px}
+.note{font-size:11px;color:var(--faint);font-weight:600;margin-top:10px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--pill);color:var(--pill-ink);padding:11px 18px;border-radius:999px;font-weight:700;font-size:13px;opacity:0;transition:all .3s cubic-bezier(.3,1.4,.5,1);z-index:60;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media (max-width:1180px){
+  .tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .hero,.trend,.seeding,.stack{grid-column:span 12}
+  .seedsum,.platforms{grid-column:span 6}
+}
+@media (max-width:760px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .rail{display:none}
+  .main{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .seedsum,.platforms{grid-column:span 12}
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .hero{grid-template-columns:1fr}
+  .hero h3{font-size:23px}
+  .srow{grid-template-columns:minmax(0,1fr) 64px}
+  .srow .pc{grid-column:1/-1}
+  .out{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .search{width:100%}
+  .tools{width:100%}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+
+<div class="app">
+  <nav class="rail" aria-label="Sections">
+    <div class="logo">CT</div>
+    <a href="#overview" class="on press" data-nav aria-label="Tổng quan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></a>
+    <a href="#seeding" class="press" data-nav aria-label="Seeding"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12z"/></svg></a>
+    <a href="#channels" class="press" data-nav aria-label="Kênh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></a>
+    <a href="#posts" class="press" data-nav aria-label="Video"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10"/></svg></a>
+  </nav>
+
+  <main class="main">
+    <header class="top" id="overview">
+      <div class="hello">
+        <h1 id="greet">UMC Nursing CareTalk</h1>
+        <p id="greetSub">Hiệu suất phát hành & seeding theo từng tập</p>
+      </div>
+      <div class="tools">
+        <div class="seg" id="moduleSeg" role="tablist" aria-label="Đối tác">
+          <span class="glider" aria-hidden="true"></span>
+          <button class="press" role="tab" data-module="mcv">MCV Group</button>
+          <button class="press" role="tab" data-module="umc">UMC</button>
+        </div>
+        <label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="q" type="search" placeholder="Tìm kênh, loại content, tiêu đề…" aria-label="Tìm"></label>
+      </div>
+    </header>
+
+    <div class="syncbar" id="syncbar">
+      <span class="dot"></span><span class="grow" id="syncText">Đang mở Google Sheet…</span>
+      <button class="btn btn-ghost press" id="syncBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 4v5h-5"/></svg>Đồng bộ</button>
+    </div>
+
+    <div class="eprail" id="eprail" role="tablist" aria-label="Chọn tập"></div>
+
+    <section class="grid">
+      <article class="card hero" id="hero"></article>
+      <article class="card seedsum" id="seedsum"></article>
+    </section>
+
+    <section class="tiles" id="tiles"></section>
+
+    <section class="grid">
+      <article class="card trend" id="trend"></article>
+      <article class="card platforms" id="platforms"></article>
+    </section>
+
+    <section class="grid">
+      <article class="card seeding" id="seeding"></article>
+      <div class="stack">
+        <article class="card" id="output"></article>
+        <article class="card" id="channels"></article>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="card posts" id="posts"></article>
+    </section>
+  </main>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script>
+/* Show start-up failures on the page instead of leaving the skeleton up (e.g. a truncated paste). */
+(() => {
+  const fail = msg => {
+    const t = document.getElementById("syncText"), bar = document.getElementById("syncbar");
+    if (!t || window.__ctpStarted) return;
+    bar.classList.add("err");
+    t.textContent = "Trang chưa khởi động được (" + msg + "). Kiểm tra file Dashboard.html đã dán đủ, dòng cuối phải là thẻ đóng script.";
+  };
+  window.addEventListener("error", e => fail(e.message || "lỗi không rõ"));
+  setTimeout(() => fail("mã JavaScript không chạy"), 4000);
+})();
+</script>
+
+<script>
+var __defProp=Object.defineProperty;var __defProps=Object.defineProperties;var __getOwnPropDescs=Object.getOwnPropertyDescriptors;var __getOwnPropSymbols=Object.getOwnPropertySymbols;var __hasOwnProp=Object.prototype.hasOwnProperty;var __propIsEnum=Object.prototype.propertyIsEnumerable;var __defNormalProp=(obj,key,value)=>key in obj?__defProp(obj,key,{enumerable:true,configurable:true,writable:true,value}):obj[key]=value;var __spreadValues=(a,b)=>{for(var prop in b||(b={}))if(__hasOwnProp.call(b,prop))__defNormalProp(a,prop,b[prop]);if(__getOwnPropSymbols)for(var prop of __getOwnPropSymbols(b)){if(__propIsEnum.call(b,prop))__defNormalProp(a,prop,b[prop])}return a};var __spreadProps=(a,b)=>__defProps(a,__getOwnPropDescs(b));(()=>{"use strict";var _a;const SHEET_ID="1oPp5MQr5JPnpibvTQESLBqgG-_n30cHykLVB-FkFS3M";const SHEET_URL=`https:\/\/docs.google.com/spreadsheets/d/${SHEET_ID}/edit`;const DRIVE="Google Drive";const XLSX_MIME="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";const TOTAL_EPISODES=28;const DEFAULT_SERIES_VIEWS=52e5;const CUTS_PER_EPISODE_PLAN=4;const AUTO_SYNC_MS=3*60*1e3;const PLATFORMS={YouTube:{color:"var(--yt)",icon:'<path d="M22 8.2a3 3 0 0 0-2.1-2.1C18 5.6 12 5.6 12 5.6s-6 0-7.9.5A3 3 0 0 0 2 8.2 31 31 0 0 0 1.6 12 31 31 0 0 0 2 15.8a3 3 0 0 0 2.1 2.1c1.9.5 7.9.5 7.9.5s6 0 7.9-.5a3 3 0 0 0 2.1-2.1c.3-1.2.4-2.5.4-3.8s-.1-2.6-.4-3.8zM10 15V9l5.2 3z" fill="currentColor"/>'},Facebook:{color:"var(--fb)",icon:'<path d="M14 8h3V4h-3a4 4 0 0 0-4 4v2H8v4h2v8h4v-8h3l1-4h-4V8z" fill="currentColor"/>'},TikTok:{color:"var(--tt)",icon:'<path d="M16 3c.4 2.4 1.9 4 4.4 4.2v3.4a8 8 0 0 1-4.4-1.4v6.3A5.6 5.6 0 1 1 10.4 10v3.5a2.2 2.2 0 1 0 2.2 2.2V3z" fill="currentColor"/>'}};const TYPES=["Full","Best Cut","Short Cut","BTS"];const SeedingPolicy={noSeeding:["mcv tv|YouTube"],excluded(p){return this.noSeeding.includes(fold(p.channel)+"|"+p.platform)},rules:[{label:"Tập full · UMC",target:40,match:p=>p.type==="Full"&&p.owner==="umc"},{label:"Best/Short cut · kênh chính",target:30,match:p=>isCut(p)&&p.tier==="main"},{label:"Best/Short cut · kênh hỗ trợ",target:15,match:p=>isCut(p)&&p.tier!=="main"}],targetFor(p){var _a2;return this.excluded(p)?0:((_a2=this.rules.find(r=>r.match(p)))==null?void 0:_a2.target)||0}};function isCut(p){return p.type==="Best Cut"||p.type==="Short Cut"}const ViewKpi={series:kpi=>(kpi==null?void 0:kpi.seriesViews)||DEFAULT_SERIES_VIEWS,perEpisode:kpi=>ViewKpi.series(kpi)/TOTAL_EPISODES};const norm=s=>String(s!=null?s:"").normalize("NFC").toLowerCase().replace(/\s+/g," ").trim();const fold=s=>norm(s).normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/đ/g,"d");const slug=s=>fold(s).replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");const toNum=v=>{if(v===""||v==null)return null;if(typeof v==="number")return v;const n=parseInt(String(v).replace(/[^\d]/g,""),10);return isNaN(n)?null:n};const ytId=url=>(String(url).match(/(?:shorts\/|watch\?v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/)||[])[1]||null;function normType(raw,fallback="Short Cut"){const t=fold(raw);if(!t)return fallback;if(t.includes("bts")||t.includes("hau truong"))return"BTS";if(t.includes("full"))return"Full";if(t.includes("best"))return"Best Cut";if(t.includes("short"))return"Short Cut";return fallback}function normPlatform(raw){const t=fold(raw);return t.includes("tiktok")?"TikTok":t.includes("face")||t==="fb"?"Facebook":t.includes("you")||t==="yt"?"YouTube":null}const SheetParser={rows(ws){if(Array.isArray(ws))return ws;const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:"",raw:true,blankrows:true});(ws["!merges"]||[]).forEach(m=>{var _a2;const v=(_a2=rows[m.s.r])==null?void 0:_a2[m.s.c];for(let r=m.s.r;r<=m.e.r;r++)for(let c=m.s.c;c<=m.e.c;c++){rows[r]||(rows[r]=[]);if(rows[r][c]===""||rows[r][c]==null)rows[r][c]=v}});return rows},find(wb,name){const k=wb.SheetNames.find(n=>norm(n)===norm(name));return k?wb.Sheets[k]:null},parse(wb){const config=this.parseConfig(this.find(wb,"DASHBOARD_CONFIG"));const report=this.find(wb,"REPORT");if(!report)throw{code:"no_report"};const yt=this.parseYouTube(this.find(wb,"YT_AUTO"),config);const rep=this.parseReport(report,config,new Set(yt.map(p=>p.ytId)));rep.carry.forEach((seed,id)=>{const p=yt.find(x=>x.ytId===id);if(p&&p.seeding==null)p.seeding=seed});return{posts:[...rep.posts,...yt],episodes:this.episodesFromYouTube(yt),kpi:this.parseKpi(this.find(wb,"KPI")),hasYtTab:!!this.find(wb,"YT_AUTO"),hasSeedingCol:rep.hasSeedingCol,syncedAt:Date.now()}},parseConfig(ws){const map={};if(!ws)return map;this.rows(ws).slice(1).forEach(r=>{if(!r[0])return;const owner=fold(r[2]).includes("umc")?"umc":fold(r[2]).includes("mcv")?"mcv":null;const tier=fold(r[3]).includes("chinh")||fold(r[3]).includes("main")?"main":fold(r[3])?"support":null;map[fold(r[0])+"|"+(normPlatform(r[1])||"")]={owner,tier}});return map},channelMeta(config,name,platform){const c=config[fold(name)+"|"+platform]||{};const umcByName=/umc|dai hoc y duoc|dh y duoc/.test(fold(name));return{owner:c.owner||(umcByName?"umc":"mcv"),tier:c.tier||(fold(name)==="mcv tv"||umcByName?"main":"support")}},parseReport(ws,config,ytIds){const rows=this.rows(ws);const head=rows.slice(0,3);const colOf=test=>{for(let c=0;c<60;c++)if(head.some(r=>test(fold(r==null?void 0:r[c]))))return c;return-1};const C={ep:colOf(t=>t==="tap"),type:colOf(t=>t.includes("loai content")),pf:colOf(t=>t==="nen tang"),ch:colOf(t=>t.includes("kenh phat hanh")),link:colOf(t=>t.includes("link")),note:colOf(t=>t==="note"),w7:colOf(t=>t.includes("7 ngay")),w14:colOf(t=>t.includes("2 tuan")),seed:colOf(t=>t.includes("seeding")),save:colOf(t=>t==="save"||t==="saves"||t.includes("luot luu"))};const posts=[],carry=new Map,seenUrl=new Set;let prevEp=1;rows.slice(3).forEach((r,i)=>{const url=String(r[C.link]||"").trim();const platform=normPlatform(r[C.pf]);if(!url||!platform)return;const noteEp=String(r[C.note]||"").match(/t[aậâ]p\s*0*(\d{1,2})/i);const ep=noteEp?+noteEp[1]:toNum(r[C.ep])||prevEp;prevEp=ep;const block=C.w14>=0&&toNum(r[C.w14])!=null?C.w14:C.w7;const seeding=C.seed>=0?toNum(r[C.seed]):null;const id=ytId(url);if(platform==="YouTube"&&id&&ytIds.has(id)){if(seeding!=null)carry.set(id,seeding);return}const urlKey=url.split("?")[0].replace(/\/$/,"");if(seenUrl.has(urlKey))return;seenUrl.add(urlKey);const name=String(r[C.ch]||"").trim()||"Không rõ kênh";posts.push(__spreadProps(__spreadValues({id:"r"+(i+4),row:i+4,source:"REPORT",episode:ep,type:normType(r[C.type]),platform,channel:name,channelId:slug(name)+"-"+platform.toLowerCase()},this.channelMeta(config,name,platform)),{url,views:toNum(r[block]),likes:toNum(r[block+1]),shares:toNum(r[block+2]),comments:toNum(r[block+3]),reach:toNum(r[block+4]),saves:C.save>=0?toNum(r[C.save]):null,seeding,window:block===C.w14?"2 tuần":"7 ngày"}))});return{posts,carry,hasSeedingCol:C.seed>=0}},parseYouTube(ws,config){if(!ws)return[];const rows=this.rows(ws),h=(rows[0]||[]).map(fold),col=n=>h.indexOf(fold(n));const g=(r,n)=>col(n)>=0?r[col(n)]:"";return rows.slice(1).filter(r=>g(r,"Video ID")).map(r=>{const name=String(g(r,"Kênh")||"").trim();const meta=this.channelMeta(config,name,"YouTube");const ownerCol=fold(g(r,"Đơn vị"));return{id:"y"+g(r,"Video ID"),ytId:String(g(r,"Video ID")),source:"YT_AUTO",episode:toNum(g(r,"Tập (sửa tay)"))||toNum(g(r,"Tập (tự động)"))||null,type:normType(g(r,"Loại (sửa tay)")||g(r,"Loại (tự động)")),platform:"YouTube",channel:name,channelId:slug(name)+"-youtube",owner:ownerCol.includes("umc")?"umc":ownerCol.includes("mcv")?"mcv":meta.owner,tier:meta.tier,title:String(g(r,"Tiêu đề")||""),url:g(r,"Link")||`https:\/\/www.youtube.com/watch?v=${g(r,"Video ID")}`,views:toNum(g(r,"Views")),likes:toNum(g(r,"Likes")),comments:toNum(g(r,"Comments")),shares:null,reach:null,saves:null,seeding:toNum(g(r,"Comment seeding")),window:"live",published:typeof g(r,"Ngày đăng")==="number"?Math.round((g(r,"Ngày đăng")-25569)*864e5):null}})},parseKpi(ws){if(!ws)return{};const views=this.rows(ws).find(r=>fold(r[0])==="views");return{seriesViews:views?toNum(views[2]):null}},episodesFromYouTube(yt){const out={};const tidy=t=>{let x=String(t).split("|")[0].trim();if(x===x.toUpperCase())x=x.toLocaleLowerCase("vi");return x.charAt(0).toLocaleUpperCase("vi")+x.slice(1)};[...yt].filter(p=>p.type==="Full"&&p.episode).sort((a,b)=>(a.owner==="mcv"?0:1)-(b.owner==="mcv"?0:1)).forEach(p=>{var _a2;out[_a2=p.episode]||(out[_a2]={title:tidy(p.title),air:p.published})});return out}};const SheetSource={fetch(){return new Promise((resolve,reject)=>{var _a2,_b;if(!((_b=(_a2=window.google)==null?void 0:_a2.script)==null?void 0:_b.run))return reject({code:"no_gas"});google.script.run.withSuccessHandler(wb=>{try{resolve(SheetParser.parse(wb))}catch(e){reject((e==null?void 0:e.code)?e:{code:"parse",message:String(e)})}}).withFailureHandler(e=>reject({code:"gas",message:(e==null?void 0:e.message)||String(e)})).getDashboardData()})}};const SnapshotStore={init(){},save(){}};const Metrics={engagement:p=>(p.likes||0)+(p.shares||0)+(p.comments||0)+(p.saves||0),val(p,k){return k==="engagement"?this.engagement(p):p[k]||0},totals(posts){const t={posts:posts.length};["views","reach","likes","shares","comments","saves","engagement"].forEach(k=>t[k]=posts.reduce((a,p)=>a+this.val(p,k),0));t.er=t.views?t.engagement/t.views:0;return t},byEpisode(posts,k){const out=Array(TOTAL_EPISODES).fill(0);posts.forEach(p=>{if(p.episode>=1&&p.episode<=TOTAL_EPISODES)out[p.episode-1]+=this.val(p,k)});return out},seeding(posts){let target=0,done=0;const rows=posts.map(p=>({p,target:SeedingPolicy.targetFor(p),done:p.seeding||0})).filter(r=>r.target>0);rows.forEach(r=>{target+=r.target;done+=Math.min(r.done,r.target)});const cuts=rows.filter(r=>isCut(r.p)),fulls=rows.filter(r=>r.p.type==="Full");const sum=list=>list.reduce((a,r)=>a+r.done,0);return{rows,target,done,pct:target?done/target:0,total:sum(rows),cuts:{seeded:cuts.filter(r=>r.done>0).length,posts:cuts.length,done:sum(cuts),target:cuts.reduce((a,r)=>a+r.target,0)},fulls:{seeded:fulls.filter(r=>r.done>0).length,posts:fulls.length,done:sum(fulls),target:fulls.reduce((a,r)=>a+r.target,0)}}}};const S={data:null,status:{kind:"loading"},ui:{module:"mcv",ep:"all",platform:"all",metric:"views",q:"",seedFilter:"all"}};try{Object.assign(S.ui,JSON.parse(localStorage.getItem("ctp-ui2")||"{}"))}catch(_){}const saveUi=()=>{try{localStorage.setItem("ctp-ui2",JSON.stringify(S.ui))}catch(_){}};const $=s=>document.querySelector(s);const esc=s=>String(s!=null?s:"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);const nf=new Intl.NumberFormat("vi-VN");const fmt=n=>nf.format(Math.round(n||0));const compact=n=>n>=1e6?(n/1e6).toFixed(2).replace(/\.?0+$/,"").replace(".",",")+"M":n>=1e4?(n/1e3).toFixed(n>=1e5?0:1).replace(".",",")+"K":fmt(n);const pct=x=>(x*100).toFixed(x<.1?1:0).replace(".",",")+"%";const pad=n=>String(n).padStart(2,"0");const time=ms=>new Date(ms).toLocaleString("vi-VN",{hour:"2-digit",minute:"2-digit",day:"2-digit",month:"2-digit"});const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;function haptic(pattern=8){var _a2;try{(_a2=navigator.vibrate)==null?void 0:_a2.call(navigator,pattern)}catch(_){}}document.addEventListener("pointerdown",e=>{const el=e.target.closest(".press,.btn,.ep,.tile,.pf,.chip");if(!el)return;haptic(el.classList.contains("btn")?[6,30,6]:8);el.classList.add("tap");setTimeout(()=>el.classList.remove("tap"),140)},{passive:true});function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("show"),2400)}function setNum(el,to,f,animate){if(!el)return;const from=+el.dataset.v||0;el.dataset.v=to;if(!animate||reduce||from===to){el.textContent=f(to);return}const t0=performance.now(),d=750;const step=now=>{const k=Math.min(1,(now-t0)/d),e=1-Math.pow(1-k,3);el.textContent=f(from+(to-from)*e);if(k<1)requestAnimationFrame(step)};requestAnimationFrame(step)}const allPosts=()=>{var _a2;return((_a2=S.data)==null?void 0:_a2.posts)||[]};function scoped({ignoreEp=false,ignorePf=false,allOwners=false}={}){const q=norm(S.ui.q);return allPosts().filter(p=>{if(!allOwners&&p.owner!==S.ui.module)return false;if(!ignoreEp&&S.ui.ep!=="all"&&p.episode!==S.ui.ep)return false;if(!ignorePf&&S.ui.platform!=="all"&&p.platform!==S.ui.platform)return false;if(q&&!norm(`${p.channel} ${p.platform} ${p.type} ${p.title||""} ${p.url} tập ${p.episode}`).includes(q))return false;return true})}function renderSync(){const st=S.status,bar=$("#syncbar"),txt=$("#syncText");bar.classList.toggle("live",st.kind==="live");bar.classList.toggle("err",st.kind==="error");$("#syncBtn").classList.toggle("spin",st.kind==="loading");const snap=S.data&&st.kind!=="live"?` Đang hiển thị bản lưu lúc <b>${time(S.data.syncedAt)}<\/b>.`:"";txt.innerHTML=st.kind==="live"?`Số liệu trực tiếp từ Master Plan lúc <b>${time(S.data.syncedAt)}<\/b> · tự cập nhật mỗi 3 phút`:st.kind==="loading"?"Đang đọc Google Sheet…"+snap:`<b>${esc(st.title)}<\/b> ${esc(st.detail||"")}${snap}`}function renderModuleSeg(){const seg=$("#moduleSeg"),g=seg.querySelector(".glider");seg.querySelectorAll("button").forEach(b=>{const on=b.dataset.module===S.ui.module;b.classList.toggle("on",on);b.setAttribute("aria-selected",on);if(on){g.style.left=b.offsetLeft+"px";g.style.width=b.offsetWidth+"px"}});$("#greet").textContent=S.ui.module==="mcv"?"MCV Group · CareTalk":"UMC · Nursing CareTalk";$("#greetSub").textContent=S.ui.module==="mcv"?"MCV TV (tiêu đề chứa “Care Talk”) + mạng lưới page/kênh MCV Network":"Bệnh viện ĐH Y Dược TP.HCM: YouTube (mô tả chứa “UMC Nursing CareTalk”) + Facebook"}function renderEpRail(){var _a2,_b,_c;const has=new Set(allPosts().filter(p=>p.owner===S.ui.module).map(p=>p.episode));let h=`<button class="ep press ${S.ui.ep==="all"?"on":""}" data-ep="all" role="tab" aria-selected="${S.ui.ep==="all"}"><small>Series<\/small><b>All<\/b><\/button>`;for(let i=1;i<=TOTAL_EPISODES;i++){const e=(_b=(_a2=S.data)==null?void 0:_a2.episodes)==null?void 0:_b[i];h+=`<button class="ep press ${S.ui.ep===i?"on":""}" data-ep="${i}" role="tab" aria-selected="${S.ui.ep===i}" title="${esc(e?e.title:"Chưa phát sóng")}"><i class="${has.has(i)?"has":""}"><\/i><small>Tập<\/small><b>${pad(i)}<\/b><\/button>`}$("#eprail").innerHTML=h;(_c=$("#eprail .ep.on"))==null?void 0:_c.scrollIntoView({block:"nearest",inline:"center",behavior:reduce?"auto":"smooth"})}function gaugeSvg(ratio){const r=72,c=Math.PI*r,k=Math.max(0,Math.min(1,ratio));const a=Math.PI*(1-k),x=95+r*Math.cos(a),y=92-r*Math.sin(a);return`<svg class="gauge" viewBox="0 0 190 112" role="img" aria-label="Đạt ${pct(ratio)} KPI views">
+    <path d="M23 92 A72 72 0 0 1 167 92" fill="none" stroke="var(--line)" stroke-width="14" stroke-linecap="round"/>
+    <path d="M23 92 A72 72 0 0 1 167 92" fill="none" stroke="var(--lime)" stroke-width="14" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c*(1-k)}" style="transition:stroke-dashoffset 1s cubic-bezier(.2,.9,.3,1)"/>
+    <circle cx="${x}" cy="${y}" r="9" fill="var(--panel)" stroke="var(--pill)" stroke-width="4"/>
+    <text x="95" y="86" text-anchor="middle" font-size="27" font-weight="800" font-family="var(--f)" fill="var(--ink)">${pct(ratio)}<\/text><\/svg>`}function renderHero(posts,animate){var _a2,_b,_c;const isAll=S.ui.ep==="all",kpi=(_a2=S.data)==null?void 0:_a2.kpi;const target=isAll?ViewKpi.series(kpi):ViewKpi.perEpisode(kpi);const combined=Metrics.totals(scoped({allOwners:true,ignorePf:true}));const mine=Metrics.totals(posts);const ep=!isAll?(_c=(_b=S.data)==null?void 0:_b.episodes)==null?void 0:_c[S.ui.ep]:null;const share=combined.views?Metrics.totals(scoped({ignorePf:true})).views/combined.views:0;const who=S.ui.module==="mcv"?"MCV":"UMC";const el=$("#hero");el.innerHTML=`<div class="blob"><\/div>
+    <div style="position:relative;min-width:0">
+      <span class="eyebrow">${isAll?"Toàn series · "+TOTAL_EPISODES+" tập":"Tập "+pad(S.ui.ep)}${S.ui.platform!=="all"?" · "+S.ui.platform:""}<\/span>
+      <h3>${isAll?"Điều dưỡng kể chuyện, đo từng lượt xem.":esc((ep==null?void 0:ep.title)||"Chưa phát sóng")}<\/h3>
+      <div class="dept">${isAll?`${new Set(posts.map(p=>p.episode)).size} tập có dữ liệu · ${mine.posts} post`:((ep==null?void 0:ep.air)?"Phát sóng Thứ 6, "+new Date(ep.air).toLocaleDateString("vi-VN",{timeZone:"UTC"}):"Lịch phát sóng: Thứ 6 hằng tuần")+` · ${mine.posts} post`}<\/div>
+      <div class="big">
+        <div><span>Views ${who}<\/span><b class="num" data-n="v"><\/b><\/div>
+        <div><span>Engagement<\/span><b class="num" data-n="e"><\/b><\/div>
+        <div><span>ER<\/span><b class="num">${pct(mine.er)}<\/b><\/div>
+      <\/div>
+      <div class="contrib"><span class="chip dark">MCV + UMC: ${fmt(combined.views)} views<\/span><span class="chip soft">${who} đóng góp ${pct(share)}<\/span><\/div>
+    <\/div>
+    <div class="gaugebox">${gaugeSvg(combined.views/target)}<p>KPI ${isAll?"series "+fmt(target):fmt(target)+"/tập"} views · gộp MCV Network + UMC<\/p><\/div>`;if(animate){el.classList.remove("anim");void el.offsetWidth;el.classList.add("anim")}setNum(el.querySelector('[data-n="v"]'),mine.views,fmt,animate);setNum(el.querySelector('[data-n="e"]'),mine.engagement,fmt,animate)}function renderSeedSum(posts,animate){const s=Metrics.seeding(posts),cups=30,filled=Math.round(Math.min(1,s.pct)*cups);const state=!s.target?["soft","Chưa có post tính KPI"]:s.pct>=1?["lime","Đạt KPI"]:s.pct>=.6?["dark","Đang về đích"]:["dark","Cần đẩy thêm"];$("#seedsum").innerHTML=`<div><h2>Comment seeding<\/h2><p class="sub">BC/SC đã seeding: <b>${s.cuts.seeded}/${s.cuts.posts}<\/b> post${s.fulls.posts?` · Tập full UMC: <b>${fmt(s.fulls.done)}/${fmt(s.fulls.target)}<\/b> cmt`:""} · đạt ${pct(s.pct)} KPI<\/p><\/div>
+    <div class="cups" aria-hidden="true">${Array.from({length:cups},(_,i)=>`<span class="cup ${i<filled?"f":""}" style="transition-delay:${animate?i*18:0}ms"><\/span>`).join("")}<\/div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap">
+      <span class="chip ${state[0]}">${state[1]}<\/span>
+      <div class="bignum num"><span data-n="s"><\/span><small> cmt · KPI ${fmt(s.target)}<\/small><\/div>
+    <\/div>`;setNum($('#seedsum [data-n="s"]'),s.total,fmt,animate)}const TILE_DEFS=[["views","Views","Lượt xem"],["reach","Reach","Tiếp cận"],["engagement","Engagement","Tổng tương tác"],["likes","Likes","Lượt thích"],["shares","Shares","Chia sẻ"],["saves","Saves","TikTok lưu"]];function sparkSvg(series){const max=Math.max(1,...series),w=120,h=28;const pts=series.map((v,i)=>[i*(w/(series.length-1)),h-3-v/max*(h-6)]);const d=pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ");const last=pts.reduce((a,p,i)=>series[i]?p:a,pts[0]);return`<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><path d="${d} L${w} ${h} L0 ${h}Z" fill="var(--aqua)" opacity=".35"/><path d="${d}" fill="none" stroke="var(--aqua-deep)" stroke-width="1.6" vector-effect="non-scaling-stroke"/><circle cx="${last[0]}" cy="${last[1]}" r="2.5" fill="var(--pill)"/><\/svg>`}function renderTiles(posts,animate){const t=Metrics.totals(posts),all=scoped({ignoreEp:true});const box=$("#tiles");if(!box.children.length)box.innerHTML=TILE_DEFS.map(([k,l,hint])=>`<button class="tile press" data-metric="${k}"><span>${l}<em>${hint}<\/em><\/span><b class="num" data-n="${k}">0<\/b><div data-spark="${k}"><\/div><\/button>`).join("");TILE_DEFS.forEach(([k])=>{const b=box.querySelector(`[data-n="${k}"]`);if(k==="saves"&&!t.saves){b.dataset.v=0;b.textContent="—"}else setNum(b,t[k],compact,animate);box.querySelector(`[data-spark="${k}"]`).innerHTML=sparkSvg(Metrics.byEpisode(all,k))});markMetric()}function markMetric(){document.querySelectorAll("#tiles .tile").forEach(t=>{const on=t.dataset.metric===S.ui.metric;t.classList.toggle("sel",on);t.setAttribute("aria-pressed",on)})}function niceMax(v){const p=Math.pow(10,Math.floor(Math.log10(v)));const n=v/p;return(n<=1?1:n<=2?2:n<=2.5?2.5:n<=5?5:10)*p}function renderTrend(animate){var _a2;const all=scoped({ignoreEp:true,ignorePf:true});const m=S.ui.metric,label=TILE_DEFS.find(d=>d[0]===m)[1];const pfs=Object.keys(PLATFORMS).filter(pf=>S.ui.platform==="all"||pf===S.ui.platform);const series=pfs.map(pf=>Metrics.byEpisode(all.filter(p=>p.platform===pf),m));const stacks=Array.from({length:TOTAL_EPISODES},(_,i)=>series.reduce((a,s)=>a+s[i],0));const nice=niceMax(Math.max(1,...stacks));const W=720,H=240,L=44,B=26,T=12,bw=(W-L)/TOTAL_EPISODES,y=v=>H-B-v/nice*(H-B-T);let g="";for(let i=0;i<=4;i++){const v=nice*i/4;g+=`<line class="gl" x1="${L}" x2="${W}" y1="${y(v)}" y2="${y(v)}"/><text class="ax" x="${L-8}" y="${y(v)+3}" text-anchor="end">${compact(v)}<\/text>`}for(let i=0;i<TOTAL_EPISODES;i++){let y0=H-B;const x=L+i*bw+bw*.18,w=bw*.64,dim=S.ui.ep!=="all"&&S.ui.ep!==i+1;series.forEach((s,si)=>{const v=s[i];if(!v)return;const h=v/nice*(H-B-T);y0-=h;g+=`<rect class="b" data-ep="${i+1}" x="${x}" y="${y0}" width="${w}" height="${Math.max(h,1)}" rx="${Math.min(4,w/3)}" fill="${PLATFORMS[pfs[si]].color}" opacity="${dim?.25:1}" style="animation-delay:${i*18}ms"><title>Tập ${i+1} · ${pfs[si]}: ${fmt(v)}<\/title><\/rect>`});if(!stacks[i])g+=`<rect class="b" data-ep="${i+1}" x="${x}" y="${H-B-3}" width="${w}" height="3" rx="1.5" fill="var(--line)"><title>Tập ${i+1}: chưa có dữ liệu<\/title><\/rect>`;if(i%3===0||i===TOTAL_EPISODES-1||S.ui.ep===i+1)g+=`<text class="ax" x="${x+w/2}" y="${H-8}" text-anchor="middle" ${S.ui.ep===i+1?'style="fill:var(--ink);font-weight:800"':""}>${i+1}<\/text>`}const kpiNote=m==="views"?`<span class="chip soft">KPI ${fmt(ViewKpi.perEpisode((_a2=S.data)==null?void 0:_a2.kpi))} views/tập (gộp MCV + UMC)<\/span>`:"";$("#trend").innerHTML=`<div class="chead"><div><h2><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 17l6-6 4 4 8-8"/><\/svg><\/span>${label} theo tập · ${S.ui.module==="mcv"?"MCV":"UMC"}<\/h2><p class="sub">Bấm vào cột để mở tập · đổi chỉ số bằng các ô phía trên<\/p><\/div>${kpiNote}<\/div>
+    <svg class="chart ${animate?"grow":""}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${label} theo tập">${g}<\/svg>
+    <div class="legend">${pfs.map(pf=>`<span><i style="background:${PLATFORMS[pf].color}"><\/i>${pf}<\/span>`).join("")}<\/div>`}function renderPlatforms(){const posts=scoped({ignorePf:true});const by=Object.keys(PLATFORMS).map(pf=>{const ps=posts.filter(p=>p.platform===pf);return{pf,n:ps.length,t:Metrics.totals(ps)}});const max=Math.max(1,...by.map(b=>b.t.views));$("#platforms").innerHTML=`<div><h2>Nền tảng<\/h2><p class="sub">Bấm để lọc toàn bộ dashboard<\/p><\/div>`+by.map(b=>`
+    <button class="pf press ${S.ui.platform===b.pf?"on":""}" data-pf="${b.pf}" aria-pressed="${S.ui.platform===b.pf}">
+      <span class="dot" style="background:${PLATFORMS[b.pf].color}"><svg viewBox="0 0 24 24">${PLATFORMS[b.pf].icon}<\/svg><\/span>
+      <span style="min-width:0"><b>${b.pf}<\/b> <small>· ${b.n} post · ER ${pct(b.t.er)}<\/small><span class="bar"><i style="width:${b.t.views/max*100}%;background:${PLATFORMS[b.pf].color}"><\/i><\/span><\/span>
+      <span style="text-align:right"><strong class="num">${compact(b.t.views)}<\/strong><br><small>views<\/small><\/span>
+    <\/button>`).join("")}function renderSeeding(posts){const s=Metrics.seeding(posts),f=S.ui.seedFilter;let rows=s.rows;if(f==="behind")rows=rows.filter(r=>r.done<r.target);if(f==="done")rows=rows.filter(r=>r.done>=r.target);rows=[...rows].sort((a,b)=>(a.p.episode||99)-(b.p.episode||99)||a.done/a.target-b.done/b.target);const noCol=S.data&&!S.data.hasSeedingCol;const stat=(label,big,small)=>`<div><span>${label}<\/span><b class="num">${big}<\/b><small>${small}<\/small><\/div>`;const stats=`<div class="out" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+      ${stat("Đã seeding",fmt(s.total),"comment tính đến hiện tại")}
+      ${stat("BC/SC đã seeding",`${s.cuts.seeded}/${s.cuts.posts}`,`${fmt(s.cuts.done)}/${fmt(s.cuts.target)} cmt KPI`)}
+      ${stat("Tập full UMC",`${fmt(s.fulls.done)}/${fmt(s.fulls.target)}`,`${s.fulls.seeded}/${s.fulls.posts} post đã seeding · 40/post`)}
+    <\/div>`;const byEp={};s.rows.forEach(r=>{const e=r.p.episode||0;(byEp[e]||(byEp[e]=[])).push(r)});const cell=list=>list.length?`<span class="chip ${list.every(r=>r.done>=r.target)?"good":list.some(r=>r.done>0)?"warn":"bad"}">${fmt(list.reduce((a,r)=>a+r.done,0))}/${fmt(list.reduce((a,r)=>a+r.target,0))}<\/span>`:'<span style="color:var(--faint)">—<\/span>';const showFull=s.fulls.posts>0;const epTable=S.ui.ep==="all"&&Object.keys(byEp).length?`<div class="twrap"><table style="min-width:0"><thead><tr><th>Tập<\/th><th class="r">BC/SC đã seeding<\/th><th class="r">Cmt BC/SC<\/th>${showFull?'<th class="r">Full UMC · YouTube<\/th><th class="r">Full UMC · Facebook<\/th>':""}<\/tr><\/thead><tbody>
+      ${Object.keys(byEp).sort((a,b)=>(+a||99)-(+b||99)).map(e=>{const l=byEp[e],c=l.filter(r=>isCut(r.p)),fu=l.filter(r=>r.p.type==="Full");return`<tr><td><b>${+e?pad(e):"?"}<\/b><\/td><td class="r num">${c.length?c.filter(r=>r.done>0).length+"/"+c.length:"—"}<\/td><td class="r num">${cell(c)}<\/td>${showFull?`<td class="r num">${cell(fu.filter(r=>r.p.platform==="YouTube"))}<\/td><td class="r num">${cell(fu.filter(r=>r.p.platform==="Facebook"))}<\/td>`:""}<\/tr>`}).join("")}
+    <\/tbody><\/table><\/div>`:"";$("#seeding").innerHTML=`<div class="chead"><div><h2><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12z"/><\/svg><\/span>Seeding theo post<\/h2><p class="sub">KPI tự tính theo loại post & hạng kênh<\/p><\/div>
+    <div class="filters">${[["all","Tất cả"],["behind","Chưa đạt"],["done","Đạt"]].map(([k,l])=>`<button class="chip press ${f===k?"dark":"soft"}" data-seedf="${k}">${l}<\/button>`).join("")}<\/div><\/div>
+    ${stats}
+    ${epTable}
+    <div class="filters" style="margin:14px 0 4px">${SeedingPolicy.rules.map(r=>`<span class="chip soft">${r.label}: <b>${r.target}<\/b><\/span>`).join("")}<span class="chip soft">YouTube MCV TV: không seeding<\/span><\/div>
+    <div class="slist">${rows.length?rows.map(r=>{const k=r.done/r.target,col=k>=1?"var(--good)":k>=.6?"var(--warn)":"var(--bad)";return`<div class="srow"><div class="t"><b>${esc(r.p.channel)} · ${esc(r.p.type)}<\/b><small>Tập ${r.p.episode||"?"} · ${r.p.platform} · ${r.p.tier==="main"?"kênh chính":"kênh hỗ trợ"} · ${r.p.source==="YT_AUTO"?"YT_AUTO":"REPORT dòng "+r.p.row}<\/small><\/div>
+        <div class="pc"><div class="prog"><i style="width:${Math.min(100,k*100)}%;background:${col}"><\/i><\/div><div class="pl"><span>${pct(k)}<\/span><span>KPI ${r.target}<\/span><\/div><\/div>
+        <div class="v num">${r.done}<small>/${r.target}<\/small><\/div><\/div>`}).join(""):`<div class="empty"><b>${s.rows.length?"Không có post nào khớp bộ lọc":"Chưa có post nào tính KPI seeding"}<\/b>${s.rows.length?"":"Best Cut/Short Cut và tập Full trên UMC sẽ hiện ở đây."}<\/div>`}<\/div>
+    <div class="howto">${noCol?"<b>Tab REPORT chưa có cột “Comment seeding”.<\/b> Vào sheet → menu CareTalk → Cài đặt lần đầu, hoặc tự thêm cột có tiêu đề “Comment seeding” ở hàng 1.":"<b>Nhập seeding ở đâu:<\/b> tổng số comment đã rải trên từng post, ghi vào cột “Comment seeding”. Tab REPORT cho Facebook/TikTok (kể cả tập full trên Facebook Bệnh viện ĐH Y Dược), tab YT_AUTO cho video YouTube UMC. Bấm Đồng bộ để thấy ngay."}<\/div>`}function renderOutput(posts){const isAll=S.ui.ep==="all";const count=(t,pf)=>posts.filter(p=>p.type===t&&(!pf||p.platform===pf)).length;const cuts=posts.filter(p=>p.type!=="Full").length;const eps=isAll?Math.max(1,new Set(posts.map(p=>p.episode)).size):1;const plan=CUTS_PER_EPISODE_PLAN*eps;$("#output").innerHTML=`<div class="chead"><div><h2><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/><\/svg><\/span>Sản lượng content<\/h2><p class="sub">${isAll?eps+" tập có dữ liệu":"Tập "+pad(S.ui.ep)} · đếm từ sheet<\/p><\/div>
+    <span class="chip ${cuts>=plan?"good":"warn"}">${cuts} cut/BTS · plan ${plan}<\/span><\/div>
+    <div class="out">${TYPES.map(t=>`<div><span>${t}<\/span><b class="num">${count(t)}<\/b><small>YT ${count(t,"YouTube")} · FB ${count(t,"Facebook")} · TT ${count(t,"TikTok")}<\/small><\/div>`).join("")}<\/div>
+    <p class="note">Plan: ${CUTS_PER_EPISODE_PLAN} bestcut/shortcut/BTS mỗi tập (MEDIA PLAN).<\/p>`}function renderChannels(posts){const by=new Map;posts.forEach(p=>{if(!by.has(p.channelId))by.set(p.channelId,{name:p.channel,platform:p.platform,tier:p.tier,posts:[]});by.get(p.channelId).posts.push(p)});const list=[...by.values()].map(c=>__spreadProps(__spreadValues({},c),{t:Metrics.totals(c.posts)})).sort((a,b)=>b.t.views-a.t.views);$("#channels").innerHTML=`<div><h2><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7"/><\/svg><\/span>Kênh phát hành<\/h2><p class="sub">Xếp theo views · đổi hạng kênh ở tab DASHBOARD_CONFIG<\/p><\/div>
+    <div class="slist" style="margin-top:8px;max-height:300px">${list.length?list.map((c,i)=>`<div class="lrow"><span class="rk">${pad(i+1)}<\/span>
+      <span style="min-width:0"><b>${esc(c.name)}<\/b><small><span class="pfbadge"><i style="background:${PLATFORMS[c.platform].color}"><\/i>${c.platform}<\/span> · ${c.t.posts} post · ER ${pct(c.t.er)}<\/small><\/span>
+      <span style="text-align:right"><strong class="num">${compact(c.t.views)}<\/strong><br><span class="tier ${c.tier}">${c.tier==="main"?"Kênh chính":"Hỗ trợ"}<\/span><\/span><\/div>`).join(""):`<div class="empty"><b>Chưa có kênh trong phạm vi này<\/b>Thêm dòng vào tab REPORT của sheet.<\/div>`}<\/div>`}function renderPosts(posts){const rows=[...posts].sort((a,b)=>(a.episode||99)-(b.episode||99)||a.channel.localeCompare(b.channel));const cell=v=>v==null?'<span style="color:var(--faint)">—<\/span>':fmt(v);$("#posts").innerHTML=`<div class="chead"><div><h2><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18"/><\/svg><\/span>Chi tiết từng video<\/h2><p class="sub">${rows.length} post · số đo mới nhất trong sheet (mốc 2 tuần nếu có, không thì 7 ngày; YouTube tự kéo là số hiện tại)<\/p><\/div><\/div>
+    ${rows.length?`<div class="twrap"><table><thead><tr><th>Tập<\/th><th>Kênh<\/th><th>Nền tảng<\/th><th>Loại<\/th><th>Tiêu đề / nguồn<\/th><th class="r">Views<\/th><th class="r">Reach<\/th><th class="r">Likes<\/th><th class="r">Cmt<\/th><th class="r">Share<\/th><th class="r">Save<\/th><th class="r">Seeding<\/th><th class="r">ER<\/th><th>Link<\/th><\/tr><\/thead><tbody>
+    ${rows.map(p=>{const t=SeedingPolicy.targetFor(p),er=p.views?Metrics.engagement(p)/p.views:0;return`<tr><td><b>${p.episode?pad(p.episode):"?"}<\/b><\/td><td>${esc(p.channel)}<\/td><td><span class="pfbadge"><i style="background:${PLATFORMS[p.platform].color}"><\/i>${p.platform}<\/span><\/td><td>${p.type}<\/td>
+      <td class="ttl">${p.source==="YT_AUTO"?`<span class="src auto">Tự động<\/span> ${esc(p.title)}`:`<span class="src">REPORT dòng ${p.row}<\/span> <span style="color:var(--faint)">${p.window}<\/span>`}<\/td>
+      <td class="r num">${cell(p.views)}<\/td><td class="r num">${cell(p.reach)}<\/td><td class="r num">${cell(p.likes)}<\/td><td class="r num">${cell(p.comments)}<\/td><td class="r num">${cell(p.shares)}<\/td><td class="r num">${cell(p.saves)}<\/td>
+      <td class="r num">${t?`<span class="chip ${(p.seeding||0)>=t?"good":"bad"}">${p.seeding||0}/${t}<\/span>`:'<span style="color:var(--faint)">—<\/span>'}<\/td>
+      <td class="r num">${p.views?pct(er):"—"}<\/td><td><a class="lk" href="${esc(p.url)}" target="_blank" rel="noopener">Mở ↗<\/a><\/td><\/tr>`}).join("")}
+    <\/tbody><\/table><\/div>`:`<div class="empty" style="margin-top:14px"><b>${S.data?"Chưa có video nào trong phạm vi này":"Đang chờ dữ liệu từ Google Sheet"}<\/b>${S.ui.module==="umc"?"Video YouTube UMC tự vào khi Apps Script chạy. Video Facebook UMC: thêm dòng vào tab REPORT, cột Kênh phát hành ghi tên kênh UMC.":"Đổi tập/nền tảng hoặc thêm dòng vào tab REPORT."}<\/div>`}`}function render(animate=true){const posts=scoped();renderSync();renderModuleSeg();renderEpRail();renderHero(posts,animate);renderSeedSum(posts,animate);renderTiles(posts,animate);renderTrend(animate);renderPlatforms();renderSeeding(posts);renderOutput(posts);renderChannels(posts);renderPosts(posts)}const ERRORS={no_gas:["Trang này cần mở qua link Web App.",""],gas:["Máy chủ chưa đọc được Master Plan.","Thử tải lại trang sau ít phút."],parse:["Đọc được sheet nhưng không hiểu cấu trúc.","Kiểm tra tên tab REPORT / YT_AUTO."],no_mcp:["Trang chưa đọc được Google Drive ở chế độ xem này.","Mở link trên claude.ai khi đã đăng nhập."],not_granted:["Trang chưa được cấp quyền đọc Google Drive.","Mở link trên claude.ai khi đã đăng nhập."],capability_disabled:["Trang chưa đọc được Google Drive ở chế độ xem này.","Mở link trên claude.ai khi đã đăng nhập."],server_not_connected:["Chưa kết nối Google Drive.","Vào claude.ai → Settings → Connectors → thêm Google Drive, rồi bấm Đồng bộ."],needs_reauth:["Kết nối Google Drive đã hết hạn.","Kết nối lại trong claude.ai → Settings → Connectors."],not_in_manifest:["Bạn chưa cho phép trang đọc Google Drive.","Bấm Đồng bộ và chọn Cho phép."],approval_required:["Cần bạn cho phép đọc Google Drive.","Bấm Đồng bộ và chọn Cho phép."],selection_required:["Bạn có nhiều kết nối Google Drive.","Chọn một kết nối trong hộp thoại của claude.ai."],blocked_by_policy:["Tổ chức của bạn chặn Google Drive cho trang này.",""],tool_error:["Google Drive từ chối mở file.","Kiểm tra tài khoản của bạn có quyền xem sheet Master Plan."],no_content:["Google Drive trả về nhưng không có nội dung file.","Báo lại để chỉnh cách đọc file."],no_report:["Không thấy tab REPORT trong sheet.","Kiểm tra tên tab."],no_xlsx:["Không tải được thư viện đọc Excel.","Tải lại trang."]};let syncing=false,lastOk=false,retried=false;async function sync(fromClick=false){if(syncing)return;syncing=true;S.status={kind:"loading"};renderSync();try{const data=await SheetSource.fetch();S.data=data;S.status={kind:"live"};lastOk=true;retried=false;render(true);if(fromClick){haptic([8,30,8]);toast(`Đã đồng bộ ${data.posts.length} video từ Google Sheet`)}SnapshotStore.save(data)}catch(e){const code=(e==null?void 0:e.code)||"upstream_error";if((e==null?void 0:e.retryable)&&!retried){retried=true;syncing=false;setTimeout(()=>sync(fromClick),Math.max(e.retryAfterMs||0,1500+Math.random()*1500));return}const[title,detail]=ERRORS[code]||["Chưa đọc được Google Sheet.","Thử Đồng bộ lại sau ít phút."];S.status={kind:"error",code,title,detail};lastOk=false;renderSync();if(fromClick)haptic([20,40,20])}finally{syncing=false}}document.addEventListener("click",e=>{const t=e.target;const mod=t.closest("[data-module]");if(mod){S.ui.module=mod.dataset.module;S.ui.ep="all";S.ui.platform="all";saveUi();render(true);return}const ep=t.closest("[data-ep]");if(ep){S.ui.ep=ep.dataset.ep==="all"?"all":+ep.dataset.ep;saveUi();render(true);return}const pf=t.closest("[data-pf]");if(pf){S.ui.platform=S.ui.platform===pf.dataset.pf?"all":pf.dataset.pf;saveUi();render(true);return}const mt=t.closest("[data-metric]");if(mt){S.ui.metric=mt.dataset.metric;saveUi();markMetric();renderTrend(false);return}const sf=t.closest("[data-seedf]");if(sf){S.ui.seedFilter=sf.dataset.seedf;saveUi();renderSeeding(scoped());return}if(t.closest("#syncBtn")){retried=false;sync(true);return}const nav=t.closest("[data-nav]");if(nav)document.querySelectorAll("[data-nav]").forEach(a=>a.classList.toggle("on",a===nav))});$("#q").value=S.ui.q;$("#q").addEventListener("input",e=>{S.ui.q=e.target.value;clearTimeout(render.qt);render.qt=setTimeout(()=>{saveUi();render(false)},180)});addEventListener("resize",renderModuleSeg);setInterval(()=>{if(lastOk&&document.visibilityState==="visible")sync(false)},AUTO_SYNC_MS);window.__ctpStarted=true;render(false);(_a=document.fonts)==null?void 0:_a.ready.then(renderModuleSeg);SnapshotStore.init(data=>{if(!lastOk){S.data=data;render(true)}});sync(false)})();
+</script>

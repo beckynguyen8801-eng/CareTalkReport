@@ -1,0 +1,11 @@
+{
+  "name": "caretalk-pulse",
+  "private": true,
+  "description": "Builds the public Apps Script dashboard from web/caretalk-pulse.html",
+  "scripts": {
+    "build": "python3 build_webapp.py web/caretalk-pulse.html && cp apps-script/Dashboard.html apps-script-public/Dashboard.html"
+  },
+  "devDependencies": {
+    "esbuild": "0.21.5"
+  }
+}
